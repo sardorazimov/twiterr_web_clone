@@ -16,35 +16,39 @@ import { useForm } from "react-hook-form"
 import { infer, z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { registerstep2schema } from "@/config"
+import { loginschema } from "@/config/login"
+import registermodal from "@/hooks/register.modal"
+import { useCallback } from "react"
 
 const LoginModal = () => {
-    const loginModal = useLoginModal()
-    const form = useForm<z.infer<typeof registerstep2schema>>({
-        resolver: zodResolver(registerstep2schema),
-        defaultValues:{
-          password:'',
-          username: '',
-         }
-      })
-      function onSubmit(values: z.infer<typeof registerstep2schema>) {
-        console.log('')
-       }
-    const bodyContent = <Form {...form}>
+  const registerModal  = registermodal()
+  const loginModal = useLoginModal()
+  const onToogle = useCallback(() => {
+     loginModal.onClose(),
+     registerModal.onOpen()
+  }, [loginModal, registerModal])
+
+
+  const form = useForm<z.infer<typeof loginschema>>({
+    resolver: zodResolver(loginschema),
+    defaultValues: {
+      password: '',
+      email: '',
+    }
+  })
+  function onSubmit(values: z.infer<typeof loginschema>) {
+    console.log('')
+  }
+  const { isSubmitting } = form.formState;
+  const bodyContent = <Form {...form}>
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 px-12">
-      {/* {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )} */}
       <FormField
         control={form.control}
-        name="username"
+        name="email"
         render={({ field }) => (
           <FormItem>
             <FormControl>
-              <Input placeholder="Username" {...field} />
+              <Input placeholder="Email" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -62,19 +66,33 @@ const LoginModal = () => {
           </FormItem>
         )}
       />
-      <Button></Button>
+      <Button className="w-full" disabled={isSubmitting}>
+        Register
+      </Button>
     </form>
   </Form>
-    const footer =  <div></div>
+  const footer = (
+    <div className="text-neutral-400 text-center mt-4">
+      <p>
+        First time using X?
+        <span  onClick={onToogle}
+        className="text-white cursor-pointer hover:underline">
+          {" "}
+          Create Account
+        </span>
+      </p>
+
+    </div>
+  )
 
   return (
     <div>
       <Modals
-       isOpen={loginModal.isOpen}
-       onClose={loginModal.onClose}
-       body={bodyContent}
-       footer={footer}
-       />
+        isOpen={loginModal.isOpen}
+        onClose={loginModal.onClose}
+        body={bodyContent}
+        footer={footer}
+      />
     </div>
   )
 }
